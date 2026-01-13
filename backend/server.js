@@ -2,12 +2,47 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
+const rateLimit = require('express-rate-limit');
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// Security: Only allow requests from your domain in production
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? ['https://goodnews.news', 'https://www.goodnews.news']
+  : ['http://localhost:8080', 'http://localhost:3000', 'http://127.0.0.1:8080'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like curl) only in development
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  }
+}));
+
+app.use(express.json({ limit: '10kb' })); // Limit body size
+
+// Rate limiting: 10 signups per IP per hour (prevents spam/abuse)
+const signupLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  message: { error: 'Too many signups from this IP, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting: 100 requests per IP per 15 minutes (general)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many requests, please try again later' },
+});
 
 // Initialize clients
 const supabase = createClient(
@@ -20,14 +55,39 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // News API endpoint
 const NEWS_API_KEY = process.env.NEWS_API_KEY;
 
-// Signup endpoint
-app.post('/api/signup', async (req, res) => {
+// Email validation regex
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 254;
+};
+
+// Sanitize interests (only allow alphanumeric and common chars)
+const sanitizeInterests = (interests) => {
+  if (!Array.isArray(interests)) return [];
+  return interests
+    .slice(0, 10) // Max 10 interests
+    .map(i => String(i).toLowerCase().replace(/[^a-z0-9\s-]/g, '').slice(0, 50))
+    .filter(i => i.length > 0);
+};
+
+// Signup endpoint with rate limiting
+app.post('/api/signup', signupLimiter, async (req, res) => {
   try {
     const { email, interests, timezone } = req.body;
 
-    if (!email || !interests || interests.length === 0) {
-      return res.status(400).json({ error: 'Email and at least one interest required' });
+    // Validate email
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: 'Valid email required' });
     }
+
+    // Sanitize and validate interests
+    const cleanInterests = sanitizeInterests(interests);
+    if (cleanInterests.length === 0) {
+      return res.status(400).json({ error: 'At least one interest required' });
+    }
+
+    // Validate timezone (basic check)
+    const cleanTimezone = String(timezone || 'America/New_York').slice(0, 50);
 
     // Check if email already exists
     const { data: existing } = await supabase
@@ -40,7 +100,7 @@ app.post('/api/signup', async (req, res) => {
       // Update interests if already subscribed
       const { error } = await supabase
         .from('subscribers')
-        .update({ interests, timezone, updated_at: new Date().toISOString() })
+        .update({ interests: cleanInterests, timezone: cleanTimezone, updated_at: new Date().toISOString() })
         .eq('email', email);
 
       if (error) throw error;
@@ -52,15 +112,15 @@ app.post('/api/signup', async (req, res) => {
       .from('subscribers')
       .insert([{
         email,
-        interests,
-        timezone: timezone || 'America/New_York',
+        interests: cleanInterests,
+        timezone: cleanTimezone,
         created_at: new Date().toISOString()
       }]);
 
     if (error) throw error;
 
     // Send welcome email
-    await sendWelcomeEmail(email, interests);
+    await sendWelcomeEmail(email, cleanInterests);
 
     res.json({ message: 'Successfully subscribed!' });
   } catch (error) {
@@ -340,11 +400,23 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Test email endpoint (for development)
-app.post('/api/test-digest', async (req, res) => {
+// Test email endpoint (DEVELOPMENT ONLY - disabled in production)
+app.post('/api/test-digest', generalLimiter, async (req, res) => {
+  // Block in production
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Test endpoint disabled in production' });
+  }
+
   try {
     const { email, interests } = req.body;
-    console.log(`Fetching news for interests: ${interests?.join(', ') || 'technology, science'}`);
+
+    // Validate email even in test
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: 'Valid email required' });
+    }
+
+    const cleanInterests = sanitizeInterests(interests);
+    console.log(`Fetching news for interests: ${cleanInterests.join(', ') || 'technology, science'}`);
 
     const news = await fetchGoodNews(interests || ['technology', 'science']);
     console.log(`Found ${news.length} articles`);
