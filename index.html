@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodNews.news - Your Daily Dose of Positivity</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f0f0f;
+            --secondary: #1a1a1a;
+            --accent: #00d4aa;
+            --accent-glow: rgba(0, 212, 170, 0.3);
+            --text: #ffffff;
+            --text-muted: #888;
+            --card-bg: #141414;
+            --border: #2a2a2a;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Gradient orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, #00d4aa, #00a388);
+            top: -200px;
+            right: -200px;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            bottom: 20%;
+            left: -100px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-cta {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-cta:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 6rem 0 4rem;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, var(--accent), #00a388);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+
+        /* Signup Form */
+        .signup-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .signup-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .signup-card p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .interests-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .interests-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .interest-chip {
+            padding: 0.6rem 1rem;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .interest-chip:hover {
+            border-color: var(--accent);
+        }
+
+        .interest-chip.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 12px;
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .form-note {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            padding: 4rem 0;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Features */
+        .features {
+            padding: 6rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), #00a388);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* How it works */
+        .how-it-works {
+            padding: 6rem 0;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--secondary);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0 auto 1.5rem;
+        }
+
+        .step h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .step p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 6rem 0;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .testimonial-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .testimonial-text {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), #667eea);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .author-info h4 {
+            font-size: 0.95rem;
+        }
+
+        .author-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 0;
+            text-align: center;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, var(--secondary), var(--card-bg));
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 4rem;
+        }
+
+        .cta-box h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: var(--accent);
+            color: var(--primary);
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .cta-btn:hover {
+            box-shadow: 0 0 40px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .stats {
+                gap: 2rem;
+            }
+
+            .signup-card {
+                padding: 2rem;
+            }
+
+            .cta-box {
+                padding: 2.5rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container">
+        <nav>
+            <div class="logo">
+                <div class="logo-icon">+</div>
+                GoodNews
+            </div>
+            <button class="nav-cta" onclick="document.querySelector('.signup-card').scrollIntoView({behavior: 'smooth'})">Join Waitlist</button>
+        </nav>
+
+        <section class="hero">
+            <div class="badge">
+                <span class="badge-dot"></span>
+                Launching soon
+            </div>
+            <h1>News that makes you<br><span class="highlight">feel good</span></h1>
+            <p class="hero-subtitle">Stop doom-scrolling. Get a personalized feed of positive, uplifting stories about the topics you actually care about.</p>
+
+            <div class="signup-card">
+                <h2>Get early access</h2>
+                <p>Be the first to experience news that inspires.</p>
+                <form id="signup-form">
+                    <div class="form-group">
+                        <input type="email" class="form-input" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="interests-label">Pick your interests (select at least 1)</label>
+                        <div class="interests-grid">
+                            <span class="interest-chip" data-interest="tech">Tech</span>
+                            <span class="interest-chip" data-interest="science">Science</span>
+                            <span class="interest-chip" data-interest="health">Health</span>
+                            <span class="interest-chip" data-interest="environment">Environment</span>
+                            <span class="interest-chip" data-interest="business">Business</span>
+                            <span class="interest-chip" data-interest="sports">Sports</span>
+                            <span class="interest-chip" data-interest="arts">Arts</span>
+                            <span class="interest-chip" data-interest="community">Community</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">Join the waitlist</button>
+                    <p class="form-note">No spam, ever. Unsubscribe anytime.</p>
+                </form>
+            </div>
+
+            <!-- TEST PANEL - Remove before production -->
+            <div id="test-panel" style="display: none; margin-top: 2rem; background: #1a0a0a; border: 2px solid #ff4444; border-radius: 16px; padding: 2rem; max-width: 500px;">
+                <h3 style="color: #ff4444; margin-bottom: 1rem;">🧪 Test Panel (localhost only)</h3>
+                <div style="margin-bottom: 1rem;">
+                    <input type="email" id="test-email" class="form-input" placeholder="Your email for testing" style="border-color: #ff4444;">
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button onclick="testWelcomeEmail()" class="submit-btn" style="flex: 1; background: #ff4444;">Send Welcome Email</button>
+                    <button onclick="testDigestEmail()" class="submit-btn" style="flex: 1; background: #ff8800;">Send Test Digest</button>
+                </div>
+                <p id="test-result" style="margin-top: 1rem; color: #888; font-size: 0.9rem;"></p>
+            </div>
+        </section>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">2,847</div>
+                <div class="stat-label">People on waitlist</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">News sources</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Interest categories</div>
+            </div>
+        </div>
+
+        <section class="features">
+            <div class="section-header">
+                <h2>Why GoodNews?</h2>
+                <p>We believe what you read shapes how you see the world.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#9881;</div>
+                    <h3>AI-Powered Curation</h3>
+                    <p>Our algorithm scans thousands of sources daily to find genuinely positive stories that match your interests.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#9829;</div>
+                    <h3>Mental Health First</h3>
+                    <p>Research shows positive news reduces anxiety and increases life satisfaction. We're building for your wellbeing.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#9733;</div>
+                    <h3>Quality Over Quantity</h3>
+                    <p>No clickbait, no sensationalism. Just 5-10 handpicked stories delivered to your inbox each morning.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#8634;</div>
+                    <h3>Always Learning</h3>
+                    <p>The more you read, the better we understand you. Your feed gets smarter and more relevant over time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#9728;</div>
+                    <h3>Start Your Day Right</h3>
+                    <p>Morning digest delivered at your preferred time. Begin each day informed and inspired.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#127760;</div>
+                    <h3>Global Perspective</h3>
+                    <p>Good things happen everywhere. We source positive stories from around the world.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="how-it-works">
+            <div class="section-header">
+                <h2>How it works</h2>
+                <p>Three simple steps to a better news experience.</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Choose your interests</h3>
+                    <p>Select the topics you care about. Tech, science, sports, arts - you name it.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>We find the good stuff</h3>
+                    <p>Our AI scans hundreds of sources to find positive, uplifting stories just for you.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Enjoy your daily digest</h3>
+                    <p>Wake up to a beautiful email with stories that inspire and inform.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials">
+            <div class="section-header">
+                <h2>What people are saying</h2>
+                <p>Join thousands who've changed how they consume news.</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"I used to start every morning anxious after checking the news. Now I actually look forward to my GoodNews digest. It's changed my whole outlook."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">SK</div>
+                        <div class="author-info">
+                            <h4>Sarah K.</h4>
+                            <p>Product Designer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"Finally, a news service that understands not everything has to be doom and gloom. The tech stories are actually inspiring."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">MR</div>
+                        <div class="author-info">
+                            <h4>Marcus R.</h4>
+                            <p>Software Engineer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"I share at least one story from my digest with my team every day. It's become our morning ritual."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">JL</div>
+                        <div class="author-info">
+                            <h4>Jennifer L.</h4>
+                            <p>Marketing Director</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="cta-box">
+                <h2>Ready to feel good about the news?</h2>
+                <p>Join the waitlist and be the first to experience a better way to stay informed.</p>
+                <a href="#" class="cta-btn" onclick="document.querySelector('.signup-card').scrollIntoView({behavior: 'smooth'}); return false;">Get Early Access</a>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-links">
+                <a href="#">About</a>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Contact</a>
+            </div>
+            <p>&copy; 2025 GoodNews.news - Spreading positivity, one story at a time.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Interest chip selection
+        const chips = document.querySelectorAll('.interest-chip');
+        const selectedInterests = new Set();
+
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const interest = chip.dataset.interest;
+                if (selectedInterests.has(interest)) {
+                    selectedInterests.delete(interest);
+                    chip.classList.remove('selected');
+                } else {
+                    selectedInterests.add(interest);
+                    chip.classList.add('selected');
+                }
+            });
+        });
+
+        // API URL - change to your deployed backend URL in production
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3001'
+            : 'https://your-backend.onrender.com'; // Update this after deploying
+
+        // Form submission
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (selectedInterests.size === 0) {
+                alert('Please select at least one interest.');
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Signing up...';
+            submitBtn.disabled = true;
+
+            const email = e.target.querySelector('input[type="email"]').value;
+            const interests = Array.from(selectedInterests);
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            try {
+                const response = await fetch(`${API_URL}/api/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, interests, timezone })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to subscribe');
+                }
+
+                // Success - show confirmation
+                e.target.innerHTML = `
+                    <div style="text-align: center; padding: 20px 0;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+                        <h3 style="color: var(--accent); margin-bottom: 8px;">You're on the list!</h3>
+                        <p style="color: var(--text-muted);">Check your inbox for a welcome email.<br>Your first digest arrives tomorrow at 7:30 AM.</p>
+                    </div>
+                `;
+            } catch (error) {
+                alert(error.message || 'Something went wrong. Please try again.');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Smooth scroll for nav
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Show test panel on localhost
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            document.getElementById('test-panel').style.display = 'block';
+        }
+
+        // Test functions
+        async function testWelcomeEmail() {
+            const email = document.getElementById('test-email').value;
+            const resultEl = document.getElementById('test-result');
+
+            if (!email) {
+                resultEl.textContent = '❌ Please enter an email address';
+                return;
+            }
+
+            resultEl.textContent = '⏳ Sending welcome email...';
+
+            try {
+                const interests = Array.from(selectedInterests);
+                if (interests.length === 0) interests.push('technology', 'science');
+
+                const response = await fetch(`${API_URL}/api/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        interests,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                    })
+                });
+
+                const data = await response.json();
+                resultEl.textContent = response.ok ? `✅ ${data.message}` : `❌ ${data.error}`;
+            } catch (error) {
+                resultEl.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function testDigestEmail() {
+            const email = document.getElementById('test-email').value;
+            const resultEl = document.getElementById('test-result');
+
+            if (!email) {
+                resultEl.textContent = '❌ Please enter an email address';
+                return;
+            }
+
+            resultEl.innerHTML = '⏳ Fetching news and sending digest...';
+
+            try {
+                const interests = Array.from(selectedInterests);
+                if (interests.length === 0) interests.push('technology', 'science');
+
+                const response = await fetch(`${API_URL}/api/test-digest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, interests })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    let html = `<div style="color: #00d4aa;">✅ ${data.message} (${data.newsCount} articles)</div>`;
+                    if (data.emailId) {
+                        html += `<div style="font-size: 0.8rem; margin-top: 4px;">Email ID: ${data.emailId}</div>`;
+                    }
+                    if (data.articles && data.articles.length > 0) {
+                        html += `<div style="margin-top: 12px; text-align: left; font-size: 0.85rem;">`;
+                        html += `<strong>Articles sent:</strong><ul style="margin: 8px 0; padding-left: 20px;">`;
+                        data.articles.forEach(a => {
+                            html += `<li style="margin: 4px 0;"><span style="color: #00d4aa;">[${a.category}]</span> ${a.title} <span style="color: #666;">- ${a.source}</span></li>`;
+                        });
+                        html += `</ul></div>`;
+                    }
+                    if (data.note) {
+                        html += `<div style="color: #ff8800; margin-top: 8px;">${data.note}</div>`;
+                    }
+                    resultEl.innerHTML = html;
+                } else {
+                    resultEl.innerHTML = `<div style="color: #ff4444;">❌ ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<div style="color: #ff4444;">❌ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
