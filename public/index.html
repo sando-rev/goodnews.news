@@ -740,10 +740,10 @@
             });
         });
 
-        // API URL - change to your deployed backend URL in production
+        // API URL - use relative path in production (same domain), localhost for dev
         const API_URL = window.location.hostname === 'localhost'
             ? 'http://localhost:3001'
-            : 'https://your-backend.onrender.com'; // Update this after deploying
+            : ''; // Empty string = same domain (Vercel serverless functions)
 
         // Form submission
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
