@@ -8,7 +8,7 @@
   "crons": [
     {
       "path": "/api/cron/daily-digest",
-      "schedule": "*/15 * * * *"
+      "schedule": "30 7 * * *"
     }
   ],
   "headers": [

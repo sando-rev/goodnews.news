@@ -7,32 +7,14 @@ const supabase = createClient(
 );
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const NEWS_API_KEY = process.env.NEWS_API_KEY;
+const GNEWS_API_KEY = process.env.GNEWS_API_KEY;
 
-// Fetch good news
+// Fetch good news from GNews.io
 async function fetchGoodNews(interests) {
   const newsItems = [];
 
-  const positiveKeywords = [
-    'breakthrough', 'success', 'achieve', 'discover', 'innovate',
-    'cure', 'saves', 'helped', 'donate', 'volunteer', 'milestone',
-    'renewable', 'sustainable', 'recovery', 'celebrates', 'award',
-    'research finds', 'scientists discover', 'new study', 'progress'
-  ];
-
-  const excludeKeywords = [
-    'casino', 'gambling', 'bet', 'poker', 'slots', 'free spins',
-    'death', 'dead', 'kill', 'murder', 'crash', 'disaster', 'tragedy',
-    'war', 'attack', 'terror', 'bomb', 'shooting', 'violence',
-    'scandal', 'fraud', 'scam', 'accused', 'arrest', 'prison',
-    'crypto', 'bitcoin', 'nft', 'forex', 'trading signals',
-    'weight loss', 'diet pill', 'supplement', 'cbd', 'thc',
-    'click here', 'limited time', 'act now', 'buy now', 'discount',
-    'sponsored', 'advertisement', 'promoted', 'partner content',
-    'globenewswire', 'prnewswire', 'businesswire', 'accesswire'
-  ];
-
-  const categoryMap = {
+  // Map interests to GNews topics
+  const topicMap = {
     'tech': 'technology',
     'technology': 'technology',
     'science': 'science',
@@ -40,39 +22,40 @@ async function fetchGoodNews(interests) {
     'sports': 'sports',
     'business': 'business',
     'entertainment': 'entertainment',
-    'arts': 'entertainment'
+    'arts': 'entertainment',
+    'world': 'world',
+    'nation': 'nation'
   };
+
+  const excludeKeywords = [
+    'death', 'dead', 'kill', 'murder', 'crash', 'disaster', 'tragedy',
+    'war', 'attack', 'terror', 'bomb', 'shooting', 'violence',
+    'scandal', 'fraud', 'scam', 'accused', 'arrest', 'prison'
+  ];
 
   for (const interest of interests.slice(0, 3)) {
     try {
-      const category = categoryMap[interest.toLowerCase()];
-      let response;
+      const topic = topicMap[interest.toLowerCase()];
+      let url;
 
-      if (category) {
-        response = await fetch(
-          `https://newsapi.org/v2/top-headlines?category=${category}&language=en&pageSize=20&country=us`,
-          { headers: { 'X-Api-Key': NEWS_API_KEY } }
-        );
+      if (topic) {
+        // Use topic endpoint for known categories
+        url = `https://gnews.io/api/v4/top-headlines?topic=${topic}&lang=en&max=10&apikey=${GNEWS_API_KEY}`;
       } else {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const fromDate = yesterday.toISOString().split('T')[0];
-        response = await fetch(
-          `https://newsapi.org/v2/everything?q=${encodeURIComponent(interest)}&language=en&sortBy=publishedAt&from=${fromDate}&pageSize=20`,
-          { headers: { 'X-Api-Key': NEWS_API_KEY } }
-        );
+        // Use search for custom interests
+        url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(interest)}&lang=en&max=10&apikey=${GNEWS_API_KEY}`;
       }
 
+      const response = await fetch(url);
       const data = await response.json();
 
       if (data.articles) {
         const goodArticles = data.articles.filter(article => {
           if (!article.title || !article.description) return false;
           const text = `${article.title} ${article.description}`.toLowerCase();
-          const source = (article.source?.name || '').toLowerCase();
-          const hasPositive = positiveKeywords.some(kw => text.includes(kw));
-          const hasExcluded = excludeKeywords.some(kw => text.includes(kw) || source.includes(kw));
-          return hasPositive && !hasExcluded;
+          // Exclude negative news
+          const hasExcluded = excludeKeywords.some(kw => text.includes(kw));
+          return !hasExcluded;
         });
 
         newsItems.push(...goodArticles.slice(0, 2).map(article => ({
@@ -80,6 +63,7 @@ async function fetchGoodNews(interests) {
           description: article.description,
           url: article.url,
           source: article.source.name,
+          image: article.image,
           category: interest
         })));
       }
@@ -148,28 +132,24 @@ export default async function handler(req, res) {
     const now = new Date();
     let sentCount = 0;
 
-    // Filter subscribers whose local time is 7:30 AM
+    // Send to all subscribers
     for (const subscriber of subscribers) {
       try {
-        const subscriberTime = new Date(now.toLocaleString('en-US', { timeZone: subscriber.timezone }));
-        const hour = subscriberTime.getHours();
-        const minute = subscriberTime.getMinutes();
+        const news = await fetchGoodNews(subscriber.interests);
 
-        // Send if it's between 7:30-7:45 AM in their timezone
-        if (hour === 7 && minute >= 30 && minute < 45) {
-          const news = await fetchGoodNews(subscriber.interests);
-
-          if (news.length > 0) {
-            await resend.emails.send({
-              from: 'GoodNews <onboarding@resend.dev>',
-              to: subscriber.email,
-              subject: `Your Daily GoodNews - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-              html: generateEmailHTML(news, subscriber.interests)
-            });
-            sentCount++;
-            console.log(`Sent digest to ${subscriber.email}`);
-          }
+        if (news.length > 0) {
+          await resend.emails.send({
+            from: 'GoodNews <onboarding@resend.dev>',
+            to: subscriber.email,
+            subject: `Your Daily GoodNews - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+            html: generateEmailHTML(news, subscriber.interests)
+          });
+          sentCount++;
+          console.log(`Sent digest to ${subscriber.email}`);
         }
+
+        // Small delay to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (err) {
         console.error(`Error processing ${subscriber.email}:`, err);
       }

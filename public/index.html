@@ -536,20 +536,20 @@
                 <div class="logo-icon">+</div>
                 GoodNews
             </div>
-            <button class="nav-cta" onclick="document.querySelector('.signup-card').scrollIntoView({behavior: 'smooth'})">Join Waitlist</button>
+            <button class="nav-cta" onclick="document.querySelector('.signup-card').scrollIntoView({behavior: 'smooth'})">Subscribe Free</button>
         </nav>
 
         <section class="hero">
             <div class="badge">
                 <span class="badge-dot"></span>
-                Launching soon
+                Free forever
             </div>
             <h1>News that makes you<br><span class="highlight">feel good</span></h1>
             <p class="hero-subtitle">Stop doom-scrolling. Get a personalized feed of positive, uplifting stories about the topics you actually care about.</p>
 
             <div class="signup-card">
-                <h2>Get early access</h2>
-                <p>Be the first to experience news that inspires.</p>
+                <h2>Start your free subscription</h2>
+                <p>Personalized positive news delivered to your inbox daily.</p>
                 <form id="signup-form">
                     <div class="form-group">
                         <input type="email" class="form-input" placeholder="Enter your email" required>
@@ -567,36 +567,24 @@
                             <span class="interest-chip" data-interest="community">Community</span>
                         </div>
                     </div>
-                    <button type="submit" class="submit-btn">Join the waitlist</button>
+                    <button type="submit" class="submit-btn">Subscribe for free</button>
                     <p class="form-note">No spam, ever. Unsubscribe anytime.</p>
                 </form>
             </div>
 
-            <!-- TEST PANEL - Remove before production -->
-            <div id="test-panel" style="display: none; margin-top: 2rem; background: #1a0a0a; border: 2px solid #ff4444; border-radius: 16px; padding: 2rem; max-width: 500px;">
-                <h3 style="color: #ff4444; margin-bottom: 1rem;">🧪 Test Panel (localhost only)</h3>
-                <div style="margin-bottom: 1rem;">
-                    <input type="email" id="test-email" class="form-input" placeholder="Your email for testing" style="border-color: #ff4444;">
-                </div>
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                    <button onclick="testWelcomeEmail()" class="submit-btn" style="flex: 1; background: #ff4444;">Send Welcome Email</button>
-                    <button onclick="testDigestEmail()" class="submit-btn" style="flex: 1; background: #ff8800;">Send Test Digest</button>
-                </div>
-                <p id="test-result" style="margin-top: 1rem; color: #888; font-size: 0.9rem;"></p>
-            </div>
         </section>
 
         <div class="stats">
             <div class="stat">
-                <div class="stat-number">2,847</div>
-                <div class="stat-label">People on waitlist</div>
+                <div class="stat-number">10K+</div>
+                <div class="stat-label">Daily readers</div>
             </div>
             <div class="stat">
                 <div class="stat-number">50+</div>
                 <div class="stat-label">News sources</div>
             </div>
             <div class="stat">
-                <div class="stat-number">12</div>
+                <div class="stat-number">8</div>
                 <div class="stat-label">Interest categories</div>
             </div>
         </div>
@@ -706,8 +694,8 @@
         <section class="cta-section">
             <div class="cta-box">
                 <h2>Ready to feel good about the news?</h2>
-                <p>Join the waitlist and be the first to experience a better way to stay informed.</p>
-                <a href="#" class="cta-btn" onclick="document.querySelector('.signup-card').scrollIntoView({behavior: 'smooth'}); return false;">Get Early Access</a>
+                <p>Subscribe now and start receiving your personalized positive news digest tomorrow morning.</p>
+                <a href="#" class="cta-btn" onclick="document.querySelector('.signup-card').scrollIntoView({behavior: 'smooth'}); return false;">Subscribe Free</a>
             </div>
         </section>
 
@@ -780,8 +768,8 @@
                 e.target.innerHTML = `
                     <div style="text-align: center; padding: 20px 0;">
                         <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
-                        <h3 style="color: var(--accent); margin-bottom: 8px;">You're on the list!</h3>
-                        <p style="color: var(--text-muted);">Check your inbox for a welcome email.<br>Your first digest arrives tomorrow at 7:30 AM.</p>
+                        <h3 style="color: var(--accent); margin-bottom: 8px;">You're subscribed!</h3>
+                        <p style="color: var(--text-muted);">Check your inbox for a welcome email.<br>Your first digest arrives tomorrow morning.</p>
                     </div>
                 `;
             } catch (error) {
@@ -801,91 +789,6 @@
             });
         });
 
-        // Show test panel on localhost
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            document.getElementById('test-panel').style.display = 'block';
-        }
-
-        // Test functions
-        async function testWelcomeEmail() {
-            const email = document.getElementById('test-email').value;
-            const resultEl = document.getElementById('test-result');
-
-            if (!email) {
-                resultEl.textContent = '❌ Please enter an email address';
-                return;
-            }
-
-            resultEl.textContent = '⏳ Sending welcome email...';
-
-            try {
-                const interests = Array.from(selectedInterests);
-                if (interests.length === 0) interests.push('technology', 'science');
-
-                const response = await fetch(`${API_URL}/api/signup`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email,
-                        interests,
-                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-                    })
-                });
-
-                const data = await response.json();
-                resultEl.textContent = response.ok ? `✅ ${data.message}` : `❌ ${data.error}`;
-            } catch (error) {
-                resultEl.textContent = `❌ Error: ${error.message}`;
-            }
-        }
-
-        async function testDigestEmail() {
-            const email = document.getElementById('test-email').value;
-            const resultEl = document.getElementById('test-result');
-
-            if (!email) {
-                resultEl.textContent = '❌ Please enter an email address';
-                return;
-            }
-
-            resultEl.innerHTML = '⏳ Fetching news and sending digest...';
-
-            try {
-                const interests = Array.from(selectedInterests);
-                if (interests.length === 0) interests.push('technology', 'science');
-
-                const response = await fetch(`${API_URL}/api/test-digest`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, interests })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    let html = `<div style="color: #00d4aa;">✅ ${data.message} (${data.newsCount} articles)</div>`;
-                    if (data.emailId) {
-                        html += `<div style="font-size: 0.8rem; margin-top: 4px;">Email ID: ${data.emailId}</div>`;
-                    }
-                    if (data.articles && data.articles.length > 0) {
-                        html += `<div style="margin-top: 12px; text-align: left; font-size: 0.85rem;">`;
-                        html += `<strong>Articles sent:</strong><ul style="margin: 8px 0; padding-left: 20px;">`;
-                        data.articles.forEach(a => {
-                            html += `<li style="margin: 4px 0;"><span style="color: #00d4aa;">[${a.category}]</span> ${a.title} <span style="color: #666;">- ${a.source}</span></li>`;
-                        });
-                        html += `</ul></div>`;
-                    }
-                    if (data.note) {
-                        html += `<div style="color: #ff8800; margin-top: 8px;">${data.note}</div>`;
-                    }
-                    resultEl.innerHTML = html;
-                } else {
-                    resultEl.innerHTML = `<div style="color: #ff4444;">❌ ${data.error}</div>`;
-                }
-            } catch (error) {
-                resultEl.innerHTML = `<div style="color: #ff4444;">❌ Error: ${error.message}</div>`;
-            }
-        }
     </script>
 </body>
 </html>
