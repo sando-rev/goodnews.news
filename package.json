@@ -2,7 +2,10 @@
   "name": "goodnews-news",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "dev": "cd backend && node --watch server.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",
     "resend": "^6.7.0"
